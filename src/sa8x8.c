@@ -171,12 +171,13 @@ uint16_t a2i(const char *s, uint8_t *pos) {
  * Application entrypoint
  */
 int main(void) {
-  // Perform platform specific initialization
-  platform_init();
-
-  // Create ring buffer for received UART data
+  // Create ring buffer for received UART data before platform_init()
+  // enables the UART receive interrupt, which writes into it
   struct item buf[16];
   ring_init(&rx, buf, 16);
+
+  // Perform platform specific initialization
+  platform_init();
 
   // Create command buffer and offset pointer
   char cmd[32];
