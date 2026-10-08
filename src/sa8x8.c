@@ -236,6 +236,13 @@ int main(void) {
 
     // AT+TURBO: Enter high speed UART mode
     if (eq(&cmd[2], (char *)CMD_TURBO, sizeof(CMD_TURBO))) {
+      // Refuse if the platform cannot change its baud rate, so the host
+      // does not switch speed while the module stays at the old one
+      if (!PLATFORM_TURBO) {
+        uart_puts(ERR);
+        continue;
+      }
+
       uart_puts(OK);
       platform_turbo();
       continue;

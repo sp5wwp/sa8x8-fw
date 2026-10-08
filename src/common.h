@@ -119,6 +119,7 @@ bool platform_peek(uint8_t reg, uint16_t *val);
 bool platform_poke(uint8_t reg, uint16_t val);
 void platform_amp(bool enabled);
 void platform_audio(bool enabled);
+extern const bool PLATFORM_TURBO;
 
 /*
  * UART peripheral control

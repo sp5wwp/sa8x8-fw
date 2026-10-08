@@ -24,6 +24,11 @@
 const uint8_t I2C_ADDR_XCVR = 0xE2U;
 
 /*
+ * High speed UART mode (AT+TURBO) is not implemented
+ */
+const bool PLATFORM_TURBO = false;
+
+/*
  * Successfully do nothing
  */
 void delay(uint16_t n) {
