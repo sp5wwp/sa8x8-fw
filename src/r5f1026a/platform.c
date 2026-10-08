@@ -118,7 +118,7 @@ void uart_init(void) {
   PMC1_bit.no2 = 0; // P12 (TxD0) is digital I/O
 
   PM1_bit.no1 = 1;  // P11 (RxD0) is input
-  PMC1_bit.no1 = 0; // P12 (RxD0) is digital I/O
+  PMC1_bit.no1 = 0; // P11 (RxD0) is digital I/O
 
   SS0 |= 0x03U;     // Serial channel start operation
 
@@ -381,7 +381,7 @@ void platform_init(void) {
   P1_bit.no3 = 1;   // P13 (PDN) is high
   PM1_bit.no3 = 0;  // P13 (PDN) is output
 
-  PMC1_bit.no1 = 0; // P10 (RXEN) is digital I/O
+  PMC1_bit.no0 = 0; // P10 (RXEN) is digital I/O
   P1_bit.no0 = 0;   // P10 (RXEN) is low
   PM1_bit.no0 = 0;  // P10 (RXEN) is output
 
@@ -467,16 +467,16 @@ bool platform_poke(uint8_t reg, uint16_t val) {
     return false;
   }
 
-  // TX requested so disable RXEN
+  // TX requested so disable RXEN (LNA supply off)
   if (reg == 0x30 && (val & TX)) {
-    P1_bit.no0 = 1; // P10 (RXEN) is high
+    P1_bit.no0 = 0; // P10 (RXEN) is low
   }
 
   i2c_write(I2C_ADDR_XCVR, reg, val);
 
-  // RX requested so enable RXEN
+  // RX requested so enable RXEN (LNA supply on)
   if (reg == 0x30 && (val & RX)) {
-    P1_bit.no0 = 0; // P10 (RXEN) is low
+    P1_bit.no0 = 1; // P10 (RXEN) is high
   }
 
   return true;
