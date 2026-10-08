@@ -25,6 +25,7 @@ const char CMD_PEEK[] = "+PEEK=";
 const char CMD_POKE[] = "+POKE=";
 const char CMD_AMP[] = "+AMP=";
 const char CMD_AUDIO[] = "+AUDIO=";
+const char CMD_TOT[] = "+TOT=";
 
 const char VERSION[] = "sa8x8-fw/" GIT_INFO "" CRLF;
 const char MODEL[] = MODULE_MODEL "" CRLF;
@@ -346,6 +347,31 @@ int main(void) {
 
       // Set requested amplifier state
       platform_audio(enabled);
+
+      // Send command valid response
+      uart_puts(OK);
+
+      continue;
+    }
+
+    // AT+TOT=<SEC>: Set transmit timeout in seconds, 0 disables
+    if (eq(&cmd[2], (char *)CMD_TOT, sizeof(CMD_TOT) - 1)) {
+      uint8_t i = sizeof(CMD_TOT) + 1;
+
+      // Parse timeout
+      uint16_t seconds = a2i(cmd, &i);
+
+      // Error if missing terminator
+      if (!(cmd[i] == '\0')) {
+        uart_puts(ERR);
+        continue;
+      }
+
+      // Error if the platform has no transmit timeout support
+      if (!platform_tot(seconds)) {
+        uart_puts(ERR);
+        continue;
+      }
 
       // Send command valid response
       uart_puts(OK);

@@ -411,3 +411,10 @@ void platform_audio(bool enabled) {
     p1_0 = 1; // P1_0 (SQ) is high
   }
 }
+
+bool platform_tot(uint16_t seconds) {
+  // Not implemented
+  (void)seconds;
+
+  return false;
+}

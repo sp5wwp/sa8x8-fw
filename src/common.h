@@ -26,6 +26,8 @@
 #define TX (1U << 6)
 #define RX (1U << 5)
 
+#define TOT_DEFAULT 180U // Default transmit timeout in seconds, 0 disables
+
 /*
  * Bit-level access for uint8_t
  */
@@ -128,6 +130,7 @@ bool platform_poke(uint8_t reg, uint16_t val);
 void platform_amp(bool enabled);
 void platform_audio(bool enabled);
 extern const bool PLATFORM_TURBO;
+bool platform_tot(uint16_t seconds);
 
 /*
  * UART peripheral control
@@ -148,6 +151,7 @@ extern const uint8_t I2C_ADDR_XCVR;
  * Time management
  */
 void delay(uint16_t n);
+extern volatile uint16_t uptime;
 
 #endif
 
