@@ -147,25 +147,35 @@ const char *i2a(uint16_t n) {
 }
 
 /*
- * Convert supplied ASCII character sequence to a number
+ * Convert supplied ASCII decimal digit sequence to a number
+ *
+ * Parsing starts at s[*pos] and stops at the first non-digit character,
+ * whose index is stored back into *pos. Fails if there is no digit at all
+ * or if the value does not fit in 16 bits.
  */
-uint16_t a2i(const char *s, uint8_t *pos) {
-  uint16_t n = 0;
+bool a2i(const char *s, uint8_t *pos, uint16_t *n) {
+  uint16_t val = 0;
   uint8_t i = *pos;
 
-  while ((s[i] >= '0' && s[i] <= '9') || s[i] == ' ') {
-    if (s[i] == ' ') {
-      i++;
-      continue;
+  if (!(s[i] >= '0' && s[i] <= '9')) {
+    return false;
+  }
+
+  while (s[i] >= '0' && s[i] <= '9') {
+    uint16_t d = (uint16_t)(s[i++] - '0');
+
+    // Reject anything above 65535 before it can wrap around
+    if (val > 6553U || (val == 6553U && d > 5U)) {
+      return false;
     }
 
-    n *= 10;
-    n += (uint16_t)(s[i++] - '0');
+    val = (uint16_t)(val * 10U + d);
   }
 
   *pos = i;
+  *n = val;
 
-  return n;
+  return true;
 }
 
 /*
@@ -254,10 +264,11 @@ int main(void) {
       uint8_t i = sizeof(CMD_PEEK) + 1;
 
       // Parse I2C register
-      uint16_t reg = a2i(cmd, &i);
+      uint16_t reg;
 
-      // Error if register larger than single byte or missing terminator
-      if (reg > 255 || !(cmd[i] == '\0')) {
+      // Error if no valid number, register larger than single byte or
+      // missing terminator
+      if (!a2i(cmd, &i, &reg) || reg > 255 || !(cmd[i] == '\0')) {
         uart_puts(ERR);
         continue;
       }
@@ -281,19 +292,20 @@ int main(void) {
       uint8_t i = sizeof(CMD_POKE) + 1;
 
       // Parse I2C register
-      uint16_t reg = a2i(cmd, &i);
+      uint16_t reg;
 
-      // Error response if register larger than single byte
-      if (reg > 255 || !(cmd[i++] == ',')) {
+      // Error if no valid number, register larger than single byte or
+      // missing separator
+      if (!a2i(cmd, &i, &reg) || reg > 255 || !(cmd[i++] == ',')) {
         uart_puts(ERR);
         continue;
       }
 
       // Parse I2C value
-      uint16_t val = a2i(cmd, &i);
+      uint16_t val;
 
-      // Error if missing terminator
-      if (!(cmd[i] == '\0')) {
+      // Error if no valid number or missing terminator
+      if (!a2i(cmd, &i, &val) || !(cmd[i] == '\0')) {
         uart_puts(ERR);
         continue;
       }
@@ -315,13 +327,15 @@ int main(void) {
       uint8_t i = sizeof(CMD_AMP) + 1;
 
       // Parse state
-      bool enabled = (bool) a2i(cmd, &i);
+      uint16_t state;
 
-      // Error if missing terminator
-      if (!(cmd[i] == '\0')) {
+      // Error if not 0 or 1, or missing terminator
+      if (!a2i(cmd, &i, &state) || state > 1 || !(cmd[i] == '\0')) {
         uart_puts(ERR);
         continue;
       }
+
+      bool enabled = (state == 1);
 
       // Set requested amplifier state
       platform_amp(enabled);
@@ -337,13 +351,15 @@ int main(void) {
       uint8_t i = sizeof(CMD_AUDIO) + 1;
 
       // Parse state
-      bool enabled = (bool) a2i(cmd, &i);
+      uint16_t state;
 
-      // Error if missing terminator
-      if (!(cmd[i] == '\0')) {
+      // Error if not 0 or 1, or missing terminator
+      if (!a2i(cmd, &i, &state) || state > 1 || !(cmd[i] == '\0')) {
         uart_puts(ERR);
         continue;
       }
+
+      bool enabled = (state == 1);
 
       // Set requested amplifier state
       platform_audio(enabled);
@@ -359,10 +375,10 @@ int main(void) {
       uint8_t i = sizeof(CMD_TOT) + 1;
 
       // Parse timeout
-      uint16_t seconds = a2i(cmd, &i);
+      uint16_t seconds;
 
-      // Error if missing terminator
-      if (!(cmd[i] == '\0')) {
+      // Error if no valid number or missing terminator
+      if (!a2i(cmd, &i, &seconds) || !(cmd[i] == '\0')) {
         uart_puts(ERR);
         continue;
       }
