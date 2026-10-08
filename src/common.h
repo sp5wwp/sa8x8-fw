@@ -80,8 +80,8 @@ struct item {
  *
  * The put and get pointers are shared between the UART receive interrupt
  * (producer) and the main loop (consumer). They are volatile so that the
- * busy-wait in uart_gets() rereads them on every iteration, even if the
- * compiler inlines the ring functions (for example with LTO).
+ * main loop rereads them on every iteration, even if the compiler inlines
+ * the ring functions (for example with LTO).
  */
 struct ring {
   uint16_t size;
@@ -137,7 +137,6 @@ bool platform_tot(uint16_t seconds);
  */
 void uart_init(void);
 int uart_puts(const char *s);
-int uart_gets(char *s, int size);
 
 /*
  * I2C peripheral control

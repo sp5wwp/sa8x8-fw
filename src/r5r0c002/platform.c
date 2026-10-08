@@ -68,26 +68,6 @@ int uart_puts(const char *s) {
   return len;
 }
 
-/*
- * Receive a string through UART0 via ring buffer
- */
-int uart_gets(char *s, int size) {
-  int len = 0;
-  char c;
-
-  while (len < size - 1) {
-    while (!ring_get(&rx, &c))
-      ;
-    if (c == '\r' || c == '\n') {
-      break;
-    }
-    s[len++] = c;
-  }
-  s[len] = '\0';
-
-  return len;
-}
-
 static inline void _i2c_sdio_input(void) {
   pd1_7 = 0; // P1_7 (SDIO) is input
 }

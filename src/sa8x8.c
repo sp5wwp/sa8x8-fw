@@ -190,24 +190,46 @@ int main(void) {
   // Perform platform specific initialization
   platform_init();
 
-  // Create command buffer and offset pointer
+  // Command buffer, filled one character at a time as they arrive
   char cmd[32];
+  uint8_t len = 0;
+  bool overflow = false;
+  char ch;
   char *c;
 
   // Internal state
   struct platform_state state = {0};
 
   while (1) {
-    // Update internal state
+    // Update internal state, on every iteration so that PTT and the
+    // transmit timeout are handled even while a command is half received
     platform_refresh(&state);
 
-    // Skip iteration if no incoming command
-    if (ring_empty(&rx)) {
+    // Skip iteration if no incoming character
+    if (!ring_get(&rx, &ch)) {
       continue;
     }
 
-    // Read command from UART
-    uart_gets(cmd, 32);
+    // Accumulate characters until end of line
+    if (ch != '\r' && ch != '\n') {
+      if (len < sizeof(cmd) - 1) {
+        cmd[len++] = ch;
+      } else {
+        overflow = true; // Discard the rest of an overlong line
+      }
+      continue;
+    }
+
+    // End of line: terminate command and reset buffer for the next one
+    cmd[len] = '\0';
+    len = 0;
+
+    // Reject a line that did not fit in the command buffer
+    if (overflow) {
+      overflow = false;
+      uart_puts(ERR);
+      continue;
+    }
 
     // Make command case-insensitive
     c = cmd;

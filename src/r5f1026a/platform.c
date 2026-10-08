@@ -166,28 +166,6 @@ int uart_puts(const char *s) {
   return len;
 }
 
-/*
- * Receive a string through UART0 via ring buffer
- */
-int uart_gets(char *s, int size) {
-  int len = 0;
-  char c;
-
-  while (len < size - 1) {
-    // Keep enforcing the transmit timeout while waiting for a full command
-    while (!ring_get(&rx, &c)) {
-      _tot_check();
-    }
-    if (c == '\r' || c == '\n') {
-      break;
-    }
-    s[len++] = c;
-  }
-  s[len] = '\0';
-
-  return len;
-}
-
 static inline void _i2c_sdio_input(void) {
   PM4_bit.no1 = 1; // P41 (SDIO) is input
 }
