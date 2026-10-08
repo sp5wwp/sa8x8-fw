@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup
         uses: eWaterCycle/setup-apptainer@v2
@@ -36,7 +36,7 @@ jobs:
           done
 
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sa8x8-fw-srecs
           path: |
