@@ -261,8 +261,12 @@ int main(void) {
         continue;
       }
 
-      // Read requested register
-      uint16_t val = i2c_read(I2C_ADDR_XCVR, (uint8_t)reg);
+      // Read requested register, error if the transceiver does not respond
+      uint16_t val;
+      if (!platform_peek((uint8_t)reg, &val)) {
+        uart_puts(ERR);
+        continue;
+      }
 
       // Send register contents as response
       uart_puts(i2a(val));

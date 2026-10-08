@@ -140,8 +140,8 @@ int uart_gets(char *s, int size);
  * I2C peripheral control
  */
 void i2c_init(void);
-void i2c_write(uint8_t addr, uint8_t reg, uint16_t val);
-uint16_t i2c_read(uint8_t addr, uint8_t reg);
+bool i2c_write(uint8_t addr, uint8_t reg, uint16_t val);
+bool i2c_read(uint8_t addr, uint8_t reg, uint16_t *val);
 extern const uint8_t I2C_ADDR_XCVR;
 
 /*
