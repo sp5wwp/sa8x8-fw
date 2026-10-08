@@ -1,6 +1,7 @@
 name: Build sa8x8-fw
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - src/**
