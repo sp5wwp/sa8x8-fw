@@ -408,8 +408,9 @@ void platform_sleep(void) {
 }
 
 void platform_turbo(void) {
-  while (SSR00L & 0x20U)
-    ; // Wait for any pending transmit data
+  while (SSR00L & 0x60U)
+    ; // Wait until the transmit buffer is empty (BFF00, bit 5) and the
+      // last character has finished shifting out (TSF00, bit 6)
 
   delay(1000);
 
