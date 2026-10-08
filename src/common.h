@@ -64,20 +64,28 @@ typedef struct {
 
 /*
  * A single ring buffer item
+ *
+ * The character is written by the UART receive interrupt and read by the
+ * main loop, so it is volatile to keep the compiler from caching it.
  */
 struct item {
-  char c;
+  volatile char c;
   struct item *next;
 };
 
 /*
  * A generic ring buffer structure
+ *
+ * The put and get pointers are shared between the UART receive interrupt
+ * (producer) and the main loop (consumer). They are volatile so that the
+ * busy-wait in uart_gets() rereads them on every iteration, even if the
+ * compiler inlines the ring functions (for example with LTO).
  */
 struct ring {
   uint16_t size;
   struct item *buffer;
-  struct item *put;
-  struct item *get;
+  struct item *volatile put;
+  struct item *volatile get;
 };
 
 /*
